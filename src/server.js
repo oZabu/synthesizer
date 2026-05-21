@@ -16,6 +16,11 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../dist', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+console.log('Starting server...');
+console.log('Current directory:', __dirname);
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server is running on http://0.0.0.0:${PORT}`);
+}).on('error', (err) => {
+  console.error('Server failed to start:', err);
 });
