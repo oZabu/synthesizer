@@ -37,7 +37,8 @@ function App() {
           const sliceWidth = canvas.width / values.length;
           let x = 0;
           for (let i = 0; i < values.length; i++) {
-            const v = (values[i] as number) * 0.5 + 0.5;
+            const val = values[i];
+            const v = (typeof val === "number" ? val : 0) * 0.5 + 0.5;
             const y = v * canvas.height;
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
