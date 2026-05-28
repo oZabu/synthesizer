@@ -7,6 +7,7 @@ class ToneEngine {
   private delay: Tone.FeedbackDelay;
   private reverb: Tone.Reverb;
   private analyzer: Tone.Analyser;
+  private recorder: Tone.Recorder;
   private playbackRate: number = 1;
 
   constructor() {
@@ -15,6 +16,7 @@ class ToneEngine {
     this.delay = new Tone.FeedbackDelay("8n", 0);
     this.reverb = new Tone.Reverb({ decay: 1.5, wet: 0 });
     this.analyzer = new Tone.Analyser("waveform", 256);
+    this.recorder = new Tone.Recorder();
 
     // Initial dry/wet
     this.delay.wet.value = 0;
@@ -24,6 +26,7 @@ class ToneEngine {
     // player is created dynamically on file load
     this.pitchShift.chain(this.eq, this.delay, this.reverb, Tone.getDestination());
     this.reverb.connect(this.analyzer);
+    this.reverb.connect(this.recorder);
   }
 
   async loadFile(url: string) {
@@ -57,6 +60,16 @@ class ToneEngine {
     if (this.player) {
       this.player.stop();
     }
+  }
+
+  // Recording
+  startRecording() {
+    this.recorder.start();
+  }
+
+  async stopRecording(): Promise<Blob> {
+    const blob = await this.recorder.stop();
+    return blob;
   }
 
   // Effect controls

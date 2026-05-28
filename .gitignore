@@ -7,12 +7,30 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
 dist
 dist-ssr
-*.local
 
-# Editor directories and files
+# Secrets and Environment Variables
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+*.cert
+*.p12
+
+# Database and Data
+*.db
+*.sqlite
+synth.db
+uploads/
+
+# Editor/OS files
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -22,7 +40,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+thumbs.db
 
-# Database and User Uploads
-synth.db
-uploads/
+# Misc
+.vercel
+.netlify
+.serverless

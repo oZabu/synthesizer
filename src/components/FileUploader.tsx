@@ -1,6 +1,5 @@
 import React from "react";
 import { toneEngine } from "../audio/ToneEngine";
-import { saveAudio } from "../utils/api";
 
 interface FileUploaderProps {
   onFileLoaded: (name: string) => void;
@@ -12,7 +11,6 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ onFileLoaded }) => {
     if (file) {
       const url = URL.createObjectURL(file);
       await toneEngine.loadFile(url);
-      await saveAudio(file);
       onFileLoaded(file.name);
     }
   };
