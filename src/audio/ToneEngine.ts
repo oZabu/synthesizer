@@ -7,6 +7,7 @@ class ToneEngine {
   private delay: Tone.FeedbackDelay;
   private reverb: Tone.Reverb;
   private analyzer: Tone.Analyser;
+  private playbackRate: number = 1;
 
   constructor() {
     this.pitchShift = new Tone.PitchShift(0);
@@ -34,6 +35,7 @@ class ToneEngine {
       console.log("Audio loaded");
     });
     
+    this.player.playbackRate = this.playbackRate;
     this.player.connect(this.pitchShift);
     await Tone.loaded();
   }
@@ -63,6 +65,7 @@ class ToneEngine {
   }
 
   setPlaybackRate(rate: number) {
+    this.playbackRate = rate;
     if (this.player) {
       this.player.playbackRate = rate;
     }

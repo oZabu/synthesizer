@@ -3,11 +3,15 @@ import "./App.css";
 import { toneEngine } from "./audio/ToneEngine";
 import { FileUploader } from "./components/FileUploader";
 import { ControlSlider } from "./components/ControlSlider";
+import { useAuth } from "./context/AuthContext";
+import { AuthContainer } from "./components/AuthContainer";
+import { loadAudio, loadSettings, saveSettings } from "./utils/api";
 
 function App() {
+  const { user, logout } = useAuth();
   const [fileName, setFileName] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  
+
   // Effect States
   const [pitch, setPitch] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
@@ -20,6 +24,64 @@ function App() {
   const [delayFeedback, setDelayFeedback] = useState(0.5);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Load persistence data when user changes
+  useEffect(() => {
+    if (!user) return;
+
+    const initPersistence = async () => {
+      // 1. Load Settings
+      const savedSettings = await loadSettings();
+      if (savedSettings) {
+        setPitch(savedSettings.pitch);
+        setPlaybackRate(savedSettings.playbackRate);
+        setEqLow(savedSettings.eqLow);
+        setEqMid(savedSettings.eqMid);
+        setEqHigh(savedSettings.eqHigh);
+        setReverbWet(savedSettings.reverbWet);
+        setDelayWet(savedSettings.delayWet);
+        setDelayTime(savedSettings.delayTime);
+        setDelayFeedback(savedSettings.delayFeedback);
+
+        // Apply to engine
+        toneEngine.setPitch(savedSettings.pitch);
+        toneEngine.setPlaybackRate(savedSettings.playbackRate);
+        toneEngine.setEQ(savedSettings.eqLow, savedSettings.eqMid, savedSettings.eqHigh);
+        toneEngine.setReverb(1.5, savedSettings.reverbWet);
+        toneEngine.setDelay(savedSettings.delayTime, savedSettings.delayFeedback, savedSettings.delayWet);
+      }
+
+      // 2. Load Audio
+      const savedAudio = await loadAudio();
+      if (savedAudio) {
+        await toneEngine.loadFile(savedAudio.url);
+        setFileName(savedAudio.filename);
+      }
+    };
+
+    initPersistence();
+  }, [user]);
+
+  // Save settings with debounce
+  useEffect(() => {
+    if (!user) return;
+
+    const timer = setTimeout(() => {
+      saveSettings({
+        pitch,
+        playbackRate,
+        eqLow,
+        eqMid,
+        eqHigh,
+        reverbWet,
+        delayWet,
+        delayTime,
+        delayFeedback,
+      });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [user, pitch, playbackRate, eqLow, eqMid, eqHigh, reverbWet, delayWet, delayTime, delayFeedback]);
 
   useEffect(() => {
     // Visualization loop
@@ -92,10 +154,20 @@ function App() {
     toneEngine.setDelay(time, feedback, wet);
   };
 
+  if (!user) {
+    return <AuthContainer />;
+  }
+
   return (
     <div className="app-container">
       <header>
-        <h1>Web Synth / Audio Editor</h1>
+        <div>
+          <h1>Web Synth</h1>
+          <div className="user-info">
+            <span>User: <strong>{user}</strong></span>
+            <button className="logout-btn" onClick={logout}>Logout</button>
+          </div>
+        </div>
         <FileUploader onFileLoaded={setFileName} />
         {fileName && <div className="file-info">Loaded: {fileName}</div>}
       </header>
